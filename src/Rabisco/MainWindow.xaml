@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Rabisco.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:Rabisco.Models"
+    xmlns:theming="using:Rabisco.Theming"
+    Title="Rabisco">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Barra de título customizada -->
+        <Grid x:Name="AppTitleBar" Padding="16,0,0,0">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                <FontIcon FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE70F;" />
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Rabisco" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Busca e ações -->
+        <Grid Grid.Row="1" Padding="16,0,16,12" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <AutoSuggestBox
+                x:Name="SearchBox"
+                PlaceholderText="Pesquisar notas"
+                QueryIcon="Find"
+                TextChanged="SearchBox_TextChanged" />
+
+            <Button
+                Grid.Column="1"
+                AutomationProperties.Name="Nova nota"
+                Click="NewNote_Click"
+                Style="{StaticResource AccentButtonStyle}"
+                ToolTipService.ToolTip="Nova nota">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+                <FontIcon FontSize="14" Glyph="&#xE710;" />
+            </Button>
+
+            <Button
+                Grid.Column="2"
+                AutomationProperties.Name="Mais opções"
+                ToolTipService.ToolTip="Mais opções">
+                <FontIcon FontSize="14" Glyph="&#xE712;" />
+                <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                        <MenuFlyoutItem Click="Quit_Click" Text="Sair do Rabisco">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE7E8;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+
+        <!-- Lista de notas -->
+        <ListView
+            x:Name="NotesList"
+            Grid.Row="2"
+            Padding="0,0,0,8"
+            IsItemClickEnabled="True"
+            ItemClick="NotesList_ItemClick"
+            ItemsSource="{x:Bind FilteredNotes}"
+            SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="12,0,12,8" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:Note">
+                    <Grid
+                        MinHeight="72"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Click="OpenNote_Click" Tag="{x:Bind}" Text="Abrir nota">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE8A7;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="DeleteNote_Click" Tag="{x:Bind}" Text="Excluir nota">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE74D;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
+
+                        <Border Background="{x:Bind theming:NotePalette.AccentBrush(Color), Mode=OneWay}" CornerRadius="7,0,0,7" />
+
+                        <StackPanel Grid.Column="1" Padding="12,8,12,10" Spacing="2">
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind UpdatedLabel, Mode=OneWay}" />
+                            <TextBlock
+                                MaxLines="4"
+                                Text="{x:Bind Preview, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackPanel
+            x:Name="EmptyState"
+            Grid.Row="2"
+            Margin="24"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="8"
+            Visibility="Collapsed">
+            <FontIcon FontSize="32" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Glyph="&#xE70B;" />
+            <TextBlock
+                x:Name="EmptyStateText"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</Window>

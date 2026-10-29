@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Rabisco.NoteWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Rabisco">
+
+    <!-- A barra de título nativa fica sobreposta ao papel (sem faixa própria); o texto começa logo abaixo dela. -->
+    <Grid x:Name="RootGrid" Background="Transparent">
+
+        <TextBox
+            x:Name="ContentBox"
+            Margin="14,30,14,14"
+            Padding="4,4,4,4"
+            AcceptsReturn="True"
+            BorderThickness="0"
+            PlaceholderText="Anote algo…"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            TextChanged="ContentBox_TextChanged"
+            TextWrapping="Wrap">
+            <!-- Remove fundo e borda do TextBox para o texto ficar "no papel". -->
+            <TextBox.Resources>
+                <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+            </TextBox.Resources>
+        </TextBox>
+
+        <!-- Barra superior: [+] [área de arrastar] [fixar] [menu] [botão fechar do sistema] -->
+        <Grid
+            x:Name="HeaderBar"
+            Height="32"
+            VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition x:Name="CaptionInsetColumn" Width="46" />
+            </Grid.ColumnDefinitions>
+
+            <Grid x:Name="DragRegion" Grid.Column="1" Background="Transparent" />
+
+            <Button
+                AutomationProperties.Name="Nova nota"
+                Click="NewNote_Click"
+                Style="{StaticResource NoteHeaderButtonStyle}"
+                ToolTipService.ToolTip="Nova nota">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+                <FontIcon FontSize="12" Glyph="&#xE710;" />
+            </Button>
+
+            <Button
+                x:Name="PinButton"
+                Grid.Column="2"
+                Click="PinButton_Click"
+                Style="{StaticResource NoteHeaderButtonStyle}">
+                <FontIcon x:Name="PinIcon" FontSize="12" Glyph="&#xE718;" />
+            </Button>
+
+            <Button
+                Grid.Column="3"
+                AutomationProperties.Name="Menu da nota"
+                Style="{StaticResource NoteHeaderButtonStyle}"
+                ToolTipService.ToolTip="Menu">
+                <FontIcon FontSize="12" Glyph="&#xE712;" />
+                <Button.Flyout>
+                    <Flyout x:Name="MoreFlyout" Opening="MoreFlyout_Opening" Placement="BottomEdgeAlignedRight">
+                        <StackPanel Width="232" Spacing="6">
+                            <StackPanel
+                                x:Name="ColorSwatches"
+                                HorizontalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="4" />
+
+                            <ComboBox
+                                x:Name="FontPicker"
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.Name="Fonte"
+                                Header="Fonte"
+                                SelectionChanged="FontPicker_SelectionChanged" />
+
+                            <!-- Tamanho da fonte ativa (cada fonte guarda o seu). Atalhos: Ctrl + / Ctrl - -->
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock VerticalAlignment="Center" Text="Tamanho" />
+                                <Button
+                                    Grid.Column="1"
+                                    AutomationProperties.Name="Diminuir fonte"
+                                    Click="FontSmaller_Click"
+                                    ToolTipService.ToolTip="Diminuir (Ctrl -)">
+                                    <FontIcon FontSize="12" Glyph="&#xE738;" />
+                                </Button>
+                                <TextBlock
+                                    x:Name="SizeText"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                                <Button
+                                    Grid.Column="3"
+                                    AutomationProperties.Name="Aumentar fonte"
+                                    Click="FontLarger_Click"
+                                    ToolTipService.ToolTip="Aumentar (Ctrl +)">
+                                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                                </Button>
+                            </Grid>
+
+                            <Border Height="1" Margin="0,4" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                            <Button Click="ShowList_Click" Style="{StaticResource FlyoutActionButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <FontIcon FontSize="14" Glyph="&#xE8FD;" />
+                                    <TextBlock Text="Lista de notas" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button
+                                x:Name="DeleteButton"
+                                Click="DeleteButton_Click"
+                                Style="{StaticResource FlyoutActionButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                    <TextBlock Text="Excluir nota" />
+                                </StackPanel>
+                            </Button>
+
+                            <StackPanel
+                                x:Name="DeleteConfirmPanel"
+                                Padding="8,4,0,0"
+                                Spacing="8"
+                                Visibility="Collapsed">
+                                <TextBlock Text="Excluir esta nota permanentemente?" TextWrapping="Wrap" />
+                                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                                    <Button Click="CancelDelete_Click" Content="Cancelar" />
+                                    <Button
+                                        Click="ConfirmDelete_Click"
+                                        Content="Excluir"
+                                        Style="{StaticResource AccentButtonStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+
+        </Grid>
+    </Grid>
+</Window>
